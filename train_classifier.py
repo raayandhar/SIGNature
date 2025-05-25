@@ -11,7 +11,7 @@ from utils.utils import compute_metrics,calculate_metrics
 import torch
 from src.dataset import PassagesDataset
 from torch.utils.data import DataLoader
-from src.simclr import SimCLR_Classifier,SimCLR_Classifier_SCL
+from src.simclr import SimCLR_Classifier,SimCLR_Classifier_SCL,SIGNature_Classifier,SIGNature_Classifier_SCL,SIGNature_Classifier_test
 from lightning import Fabric
 from torch.utils.tensorboard import SummaryWriter
 import torch.optim as optim
@@ -22,6 +22,7 @@ from utils.M4_utils import load_M4
 from utils.Deepfake_utils import load_deepfake
 from lightning.fabric.strategies import DDPStrategy
 from torch.utils.data.dataloader import default_collate
+import wandb
 
 def process_top_ids_and_scores(top_ids_and_scores, label_dict):
     preds=[]
@@ -106,10 +107,18 @@ def train(opt):
         opt.d=1
         opt.one_loss=True
 
-    if opt.one_loss:
-        model = SimCLR_Classifier_SCL(opt,fabric).train()
+    if opt.use_signature:
+        # Use SIGNature models with sigmoid pairwise loss
+        if opt.one_loss:
+            model = SIGNature_Classifier_SCL(opt,fabric).train()
+        else:
+            model = SIGNature_Classifier(opt,fabric).train()
     else:
-        model = SimCLR_Classifier(opt,fabric).train()
+        # Use original DeTeCtive models with InfoNCE loss
+        if opt.one_loss:
+            model = SimCLR_Classifier_SCL(opt,fabric).train()
+        else:
+            model = SimCLR_Classifier(opt,fabric).train()
     
     # assert opt.freeze_layer<=12 and opt.freeze_layer>=0, "freeze_layer should be in [0,12]"
 
@@ -152,7 +161,16 @@ def train(opt):
         with open(os.path.join(opt.savedir,'config.yaml'), 'w') as file:
             yaml.dump(opt_dict, file, sort_keys=False)
 
-    
+        # Initialize wandb
+        if not opt.disable_wandb:
+            wandb.init(
+                project=opt.wandb_project,
+                name=f"{opt.name}_v{num}",
+                config=opt_dict,
+                dir=opt.savedir,
+                tags=[opt.dataset, "SIGNature" if opt.use_signature else "DeTeCtive"]
+            )
+
     num_batches_per_epoch = len(passages_dataloder)
     warmup_steps=opt.warmup_steps
     lr = opt.lr
@@ -221,6 +239,25 @@ def train(opt):
                         writer.add_scalar('loss_model', loss_model.item(), current_step)
                         writer.add_scalar('loss_model_set', loss_set.item(), current_step)
                         writer.add_scalar('loss_human', loss_human.item(), current_step)
+                    
+                    # Log to wandb
+                    if not opt.disable_wandb:
+                        wandb_log = {
+                            'train/lr': current_lr,
+                            'train/loss': loss.item(),
+                            'train/avg_loss': avg_loss,
+                            'train/loss_label': loss_label.item(),
+                            'train/loss_classify': loss_classfiy.item(),
+                            'epoch': epoch,
+                            'step': current_step
+                        }
+                        if opt.one_loss==False:
+                            wandb_log.update({
+                                'train/loss_model': loss_model.item(),
+                                'train/loss_model_set': loss_set.item(),
+                                'train/loss_human': loss_human.item()
+                            })
+                        wandb.log(wandb_log)
         
         with torch.no_grad():
             test_loss=0
@@ -285,13 +322,22 @@ def train(opt):
                 preds=process_top_ids_and_scores(top_ids_and_scores, label_dict)
             print("Search knn done!")
             if opt.AA:
-                # print(test_labels[:10],preds[:10])
                 accuracy, avg_f1,avg_rec=calculate_metrics(test_labels, preds)
                 print(f"Validation Accuracy: {accuracy}, AvgF1: {avg_f1}, AvgRecall: {avg_rec}")
                 writer.add_scalar('val/val_loss', test_loss, epoch)
                 writer.add_scalar('val/val_acc', accuracy, epoch)
                 writer.add_scalar('val/val_avg_f1', avg_f1, epoch)
                 writer.add_scalar('val/val_avg_recall', avg_rec, epoch)
+                
+                # Log to wandb
+                if not opt.disable_wandb:
+                    wandb.log({
+                        'val/loss': test_loss,
+                        'val/accuracy': accuracy,
+                        'val/avg_f1': avg_f1,
+                        'val/avg_recall': avg_rec,
+                        'epoch': epoch
+                    })
             else:
                 human_rec, machine_rec, avg_rec, acc, precision, recall, f1 = compute_metrics(test_labels, preds)
                 print(f"Validation HumanRec: {human_rec}, MachineRec: {machine_rec}, AvgRec: {avg_rec}, Acc:{acc}, Precision:{precision}, Recall:{recall}, F1:{f1}")
@@ -303,6 +349,20 @@ def train(opt):
                 writer.add_scalar('val/val_human_rec', human_rec, epoch)
                 writer.add_scalar('val/val_machine_rec', machine_rec, epoch)
                 writer.add_scalar('val/val_avg_rec', avg_rec, epoch)
+                
+                # Log to wandb
+                if not opt.disable_wandb:
+                    wandb.log({
+                        'val/loss': test_loss,
+                        'val/accuracy': acc,
+                        'val/precision': precision,
+                        'val/recall': recall,
+                        'val/f1': f1,
+                        'val/human_rec': human_rec,
+                        'val/machine_rec': machine_rec,
+                        'val/avg_rec': avg_rec,
+                        'epoch': epoch
+                    })
 
         if fabric.global_rank == 0:
             writer.add_scalar('val/acc_classifier', right_num/tot_num, epoch)
@@ -324,6 +384,10 @@ def train(opt):
             print('Save model to {}'.format(os.path.join(opt.savedir,'model_last.pth'.format(epoch))), flush=True)        
         
         fabric.barrier()
+        
+    # Finish wandb run
+    if fabric.global_rank == 0 and not opt.disable_wandb:
+        wandb.finish()
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -376,6 +440,12 @@ if __name__ == "__main__":
     parser.add_argument("--freeze_embedding_layer",action='store_true',help="freeze embedding layer")
     parser.add_argument("--one_loss",action='store_true',help="only use single contrastive loss")
     parser.add_argument("--only_classifier", action='store_true',help="only use classifier, no contrastive loss")
+    parser.add_argument("--use_signature", action='store_true',help="use SIGNature models with sigmoid pairwise loss instead of DeTeCtive with InfoNCE loss")
+    
+    # Wandb arguments
+    parser.add_argument("--disable_wandb", action='store_true', help="disable wandb logging")
+    parser.add_argument("--wandb_project", type=str, default="signature-detection", help="wandb project name")
+    
     opt = parser.parse_args()
     tokenizer = AutoTokenizer.from_pretrained(opt.model_name)
     train(opt)

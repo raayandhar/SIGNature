@@ -1,14 +1,15 @@
-DATA_PATH="/opt/LLM_detect_data"
+DATA_PATH="/home/raayan/projects/SIGNature/datasets"
 
 # deepfake
-python train_classifier.py --device_num 8 --per_gpu_batch_size 32 --total_epoch 50 --lr 2e-5 --warmup_steps 2000\
-    --model_name princeton-nlp/unsup-simcse-roberta-base --dataset deepfake --path ${DATA_PATH}/Deepfake/cross_domains_cross_models \
-    --name deepfake-roberta-base --freeze_embedding_layer --database_name train --test_dataset_name test
+# python train_classifier.py --device_num 8 --per_gpu_batch_size 32 --total_epoch 50 --lr 2e-5 --warmup_steps 2000\
+#     --model_name princeton-nlp/unsup-simcse-roberta-base --dataset deepfake --path ${DATA_PATH}/Deepfake/cross_domains_cross_models \
+#     --name deepfake-roberta-base --freeze_embedding_layer --database_name train --test_dataset_name test
 
 # # TuringBench
-# python train_classifier.py --device_num 8 --per_gpu_batch_size 32 --total_epoch 50 --lr 2e-5 --warmup_steps 2000\
-#     --model_name princeton-nlp/unsup-simcse-roberta-base --dataset TuringBench --path ${DATA_PATH}/TuringBench/AA \
-#     --name TuringBench-roberta-base --freeze_embedding_layer --database_name train --test_dataset_name test
+python train_classifier.py --device_num 8 --per_gpu_batch_size 64 --total_epoch 50 --lr 2e-5 --warmup_steps 2000\
+    --model_name princeton-nlp/unsup-simcse-roberta-base --dataset TuringBench --path ${DATA_PATH}/TuringBench/AA \
+    --name TuringBench-roberta-base --freeze_embedding_layer --database_name train --test_dataset_name test \
+    --use_signature --wandb_project "signature-turingbench"
 
 # # M4-monolingual
 # python train_classifier.py --device_num 8 --per_gpu_batch_size 32 --total_epoch 50 --lr 2e-5 --warmup_steps 2000\
