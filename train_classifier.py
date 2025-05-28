@@ -419,7 +419,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=2e-5, help="learning rate")
     parser.add_argument("--weight_decay", type=float, default=0.0001, help="weight decay")
     parser.add_argument("--beta1", type=float, default=0.9, help="beta1")
-    parser.add_argument("--beta2", type=float, default=0.98, help="beta2")
+    parser.add_argument("--beta2", type=float, default=0.95, help="beta2")
     parser.add_argument("--eps", type=float, default=1e-6, help="eps")
     parser.add_argument("--savedir", type=str, default="./runs")
     parser.add_argument("--name", type=str, default='deepfake')

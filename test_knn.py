@@ -98,6 +98,12 @@ def test(opt):
     elif opt.mode=='M4':
         database=load_M4(opt.database_path)[opt.database_name]+load_M4(opt.database_path)[opt.database_name.replace('train','dev')]
         test_database = load_M4(opt.test_dataset_path)[opt.test_dataset_name]
+    elif opt.mode=='162DeepFake':
+        database=load_deepfake(opt.database_path)[opt.database_name] # deepfake train
+        test_database = load_M4(opt.test_dataset_path)[opt.test_dataset_name]
+    elif opt.mode=='162Turing':
+        database=load_Turing(opt.database_path)[opt.database_name]
+        test_database = load_M4(opt.test_dataset_path)[opt.test_dataset_name]
         
     # database = load_deepfake('/home/heyongxin/LLM_detect_data/Deepfake_dataset/cross_domains_cross_models')['train']
     passage_dataset = PassagesDataset(database,mode=opt.mode,need_ids=True)

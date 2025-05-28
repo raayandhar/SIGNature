@@ -8,5 +8,4 @@ matplotlib~=3.7.5
 nltk~=3.8.1
 tiktoken~=0.7.0
 lightning
-faiss-gpu
 wandb
