@@ -59,18 +59,6 @@ Model_PATH="/data/edward/SIGNature/runs/deepfake-roberta-base_v0/model_best.pth"
 #                    --test_dataset_path ${DATA_PATH}/CS162-dev/arxiv --test_dataset_name 'test_cohere' \
 #                    --model_path ${Model_PATH} --save_database --save_path database/deepfake_arxiv_cohere
 
-# Turing Train, 162 M4 test arxiv chat
-# python test_knn.py --device_num 1 --batch_size 128 --max_K 5 --model_name princeton-nlp/unsup-simcse-roberta-base \
-#                    --mode 162Turing --database_path ${DATA_PATH}/TuringBench/AA --database_name 'train' \
-#                    --test_dataset_path ${DATA_PATH}/CS162-dev/arxiv --test_dataset_name 'test_chatGPT' \
-#                    --model_path ${Model_PATH} --save_database --save_path database/TuringBench_arxiv_chat
-
-# Turing Train, 162 M4 test arxiv cohere 
-# python test_knn.py --device_num 1 --batch_size 128 --max_K 5 --model_name princeton-nlp/unsup-simcse-roberta-base \
-#                    --mode 162Turing --database_path ${DATA_PATH}/TuringBench/AA --database_name 'train' \
-#                    --test_dataset_path ${DATA_PATH}/CS162-dev/arxiv --test_dataset_name 'test_cohere' \
-#                    --model_path ${Model_PATH} --save_database --save_path database/TuringBench_arxiv_cohere
-
 # ============================================== reddit 
 # Deepfake Train, 162 M4 test reddit chat 
 # python test_knn.py --device_num 1 --batch_size 128 --max_K 5 --model_name princeton-nlp/unsup-simcse-roberta-base \
@@ -84,20 +72,8 @@ Model_PATH="/data/edward/SIGNature/runs/deepfake-roberta-base_v0/model_best.pth"
 #                    --test_dataset_path ${DATA_PATH}/CS162-dev/reddit --test_dataset_name 'test_cohere' \
 #                    --model_path ${Model_PATH} --save_database --save_path database/deepfake_reddit_cohere
 
-# Turing Train, 162 M4 test reddit chat
-# python test_knn.py --device_num 1 --batch_size 128 --max_K 5 --model_name princeton-nlp/unsup-simcse-roberta-base \
-#                    --mode 162Turing --database_path ${DATA_PATH}/TuringBench/AA --database_name 'train' \
-#                    --test_dataset_path ${DATA_PATH}/CS162-dev/reddit --test_dataset_name 'test_chatGPT' \
-#                    --model_path ${Model_PATH} --save_database --save_path database/TuringBench_reddit_chat
-
-# Turing Train, 162 M4 test reddit cohere 
-# python test_knn.py --device_num 1 --batch_size 128 --max_K 5 --model_name princeton-nlp/unsup-simcse-roberta-base \
-#                    --mode 162Turing --database_path ${DATA_PATH}/TuringBench/AA --database_name 'train' \
-#                    --test_dataset_path ${DATA_PATH}/CS162-dev/reddit --test_dataset_name 'test_cohere' \
-#                    --model_path ${Model_PATH} --save_database --save_path database/TuringBench_reddit_cohere
-
 # CS162 ethics dev set
-# ============================================== arxiv 
+# ============================================== ethics 
 # Deepfake Train, 162 ethics test german 
 # python test_knn.py --device_num 1 --batch_size 128 --max_K 5 --model_name princeton-nlp/unsup-simcse-roberta-base \
 #                    --mode 162DeepFake --database_path ${DATA_PATH}/Deepfake/cross_domains_cross_models --database_name 'train' \
@@ -110,6 +86,7 @@ python test_knn.py --device_num 1 --batch_size 128 --max_K 5 --model_name prince
                    --test_dataset_path ${DATA_PATH}/CS162-dev/toefl --test_dataset_name 'test' \
                    --model_path ${Model_PATH} --save_database --save_path database/deepfake_toefl
 
+# Deepfake Train, 162 ethics test hewlett 
 # python test_knn.py --device_num 1 --batch_size 128 --max_K 5 --model_name princeton-nlp/unsup-simcse-roberta-base \
 #                    --mode 162DeepFake --database_path ${DATA_PATH}/Deepfake/cross_domains_cross_models --database_name 'train' \
 #                    --test_dataset_path ${DATA_PATH}/CS162-dev/hewlett --test_dataset_name 'test_hewlett' \
