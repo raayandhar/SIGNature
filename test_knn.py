@@ -100,7 +100,6 @@ def test(opt):
         test_database = load_M4(opt.test_dataset_path)[opt.test_dataset_name]
     elif opt.mode=='162DeepFake':
         database=load_deepfake(opt.database_path)[opt.database_name] # deepfake train
-        database = [(text, '0' if label=='1' else '1', src, ids) for text, label, src, ids in database]
         test_database = load_M4(opt.test_dataset_path)[opt.test_dataset_name]
     elif opt.mode=='162Turing':
         database=load_Turing(opt.database_path)[opt.database_name]
