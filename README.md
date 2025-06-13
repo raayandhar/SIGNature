@@ -15,7 +15,7 @@ Model_PATH="/path/to/your/model_best.pth"
 The `script/test.sh` contains many commented out commands that runs various evaluations of our model on diferent evaluation splits. Uncomment the desired run, and run the command:
 
 ```bash
-python script/test.sh
+bash script/test.sh
 ```
 
 To begin evaluation. The evaluation begins by embedding a smaller split of the training data to serve as the databse for the KNN inference, so this may take a while. All experiments in our report were done on 1x L40s GPU, occupying around 11 GB of VRAM, depending on the size of the evaluation split.
