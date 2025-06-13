@@ -100,10 +100,18 @@ def test(opt):
         test_database = load_M4(opt.test_dataset_path)[opt.test_dataset_name]
     elif opt.mode=='162DeepFake':
         database=load_deepfake(opt.database_path)[opt.database_name] # deepfake train
+        database = [(text, '0' if label=='1' else '1', src, ids) for text, label, src, ids in database]
         test_database = load_M4(opt.test_dataset_path)[opt.test_dataset_name]
     elif opt.mode=='162Turing':
         database=load_Turing(opt.database_path)[opt.database_name]
+        # Turing has 1 as human, 0 as machine, so we need to flip the label
+        database = [(text, '0' if label=='1' else '1', src, ids) for text, label, src, ids in database]
         test_database = load_M4(opt.test_dataset_path)[opt.test_dataset_name]
+
+        print("==================")
+        print("TuringBench samples:", database[0])
+        print("CS162 samples:", test_database[0])
+        print("==================")
         
     # database = load_deepfake('/home/heyongxin/LLM_detect_data/Deepfake_dataset/cross_domains_cross_models')['train']
     passage_dataset = PassagesDataset(database,mode=opt.mode,need_ids=True)
